@@ -273,6 +273,23 @@ function SyndicatorItemSummariesMixin:GenerateWarbandSummary()
   self.SV.Warband.Pending[1] = false
 end
 
+function SyndicatorItemSummariesMixin:GetCharacterDataByKey(characterName, key)
+  if self.SV.Characters.Pending[characterName] then
+    local state = self.SV.Characters.Pending[characterName]
+    self.SV.Characters.Pending[characterName] = nil
+    self:GenerateCharacterSummary(characterName, state)
+  end
+
+  local details = SYNDICATOR_DATA.Characters[characterName]
+  if details == nil then
+    return nil
+  end
+
+  local byRealm = self.SV.Characters.ByRealm[details.details.realmNormalized]
+  local summary = byRealm and byRealm[details.details.character]
+  return summary and summary[key]
+end
+
 function SyndicatorItemSummariesMixin:GetTooltipInfo(key, sameConnectedRealm, sameFaction)
   if next(self.SV.Characters.Pending) then
     local start = debugprofilestop()

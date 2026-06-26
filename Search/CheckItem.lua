@@ -184,6 +184,30 @@ local function StackableCheck(details)
   return details.isStackable
 end
 
+local function DuplicateCheck(details)
+  local stackable = StackableCheck(details)
+  if stackable == nil then
+    return nil
+  elseif stackable then
+    return false
+  end
+
+  local summaries = addonTable.ItemSummaries
+  local currentCharacter = Syndicator.API.GetCurrentCharacter()
+  if not summaries or not currentCharacter then
+    return false
+  end
+
+  local key = addonTable.Utilities.GetItemKey(details.itemLink)
+  local data = summaries:GetCharacterDataByKey(currentCharacter, key)
+  if not data then
+    return false
+  end
+
+  local total = (data.bags or 0) + (data.bank or 0) + (data.equipped or 0) + (data.void or 0)
+  return total > 1
+end
+
 local function SocketedCheck(details)
   local gem1, gem2, gem3, gem4 = details.itemLink:match("item:%d+:[^:]*:(%d*):(%d*):(%d*):(%d*):")
   if tonumber(gem1) or tonumber(gem2) or tonumber(gem3) or tonumber(gem4) then
@@ -1111,6 +1135,7 @@ AddKeywordLocalised("KEYWORD_TRADEABLE_LOOT", IsTradeableLoot, addonTable.Locale
 AddKeywordLocalised("KEYWORD_TRADABLE_LOOT", IsTradeableLoot, addonTable.Locales.GROUP_ITEM_DETAIL)
 AddKeywordLocalised("KEYWORD_RELIC", RelicCheck, addonTable.Locales.GROUP_ARMOR_TYPE)
 AddKeywordLocalised("KEYWORD_STACKS", StackableCheck, addonTable.Locales.GROUP_ITEM_DETAIL)
+AddKeywordLocalised("KEYWORD_DUPLICATE", DuplicateCheck, addonTable.Locales.GROUP_ITEM_DETAIL)
 AddKeywordLocalised("KEYWORD_SOCKETED", SocketedCheck, addonTable.Locales.GROUP_ITEM_DETAIL)
 AddKeywordLocalised("KEYWORD_CURRENCY", CurrencyCheck, addonTable.Locales.GROUP_ITEM_DETAIL)
 AddKeywordLocalised("KEYWORD_OBJECTIVE", QuestObjectiveCheck, addonTable.Locales.GROUP_ITEM_DETAIL)
