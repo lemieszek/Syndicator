@@ -799,6 +799,45 @@ local function SocketCheck(details)
   return false
 end
 
+local PRIMARY_STATS = {
+  [LE_UNIT_STAT_STRENGTH]  = SPELL_STAT1_NAME,
+  [LE_UNIT_STAT_AGILITY]   = SPELL_STAT2_NAME,
+  [LE_UNIT_STAT_INTELLECT] = SPELL_STAT4_NAME,
+}
+
+local function GetMySpecStat()
+  local spec = GetSpecialization and GetSpecialization()
+  return spec and PRIMARY_STATS[select(6, GetSpecializationInfo(spec))]
+end
+
+local function MySpecCheck(details)
+  if not MyClassCheck(details) then
+    return false
+  end
+
+  local myStat = GetMySpecStat()
+  if not myStat then
+    return true
+  end
+
+  SaveGearStats(details)
+  if not details.itemStats then
+    return nil
+  end
+
+  local hasMine, hasOther = false, false
+  for key in pairs(details.itemStats) do
+    for _, name in pairs(PRIMARY_STATS) do
+      if _G[key] == name then
+        hasMine = hasMine or name == myStat
+        hasOther = hasOther or name ~= myStat
+      end
+    end
+  end
+
+  return hasMine or not hasOther
+end
+
 local function ToyCheck(details)
   if not C_Item.IsItemDataCachedByID(details.itemID) then
     C_Item.RequestLoadItemDataByID(details.itemID)
@@ -1117,6 +1156,7 @@ AddKeywordLocalised("KEYWORD_OBJECTIVE", QuestObjectiveCheck, addonTable.Locales
 AddKeywordLocalised("KEYWORD_COLLECTED", CollectedCheck, addonTable.Locales.GROUP_ITEM_DETAIL)
 AddKeywordLocalised("KEYWORD_UNCOLLECTED", UncollectedCheck, addonTable.Locales.GROUP_ITEM_DETAIL)
 AddKeywordLocalised("KEYWORD_MY_CLASS", MyClassCheck, addonTable.Locales.GROUP_ITEM_DETAIL)
+AddKeywordLocalised("KEYWORD_MY_SPEC", MySpecCheck, addonTable.Locales.GROUP_ITEM_DETAIL)
 AddKeywordLocalised("KEYWORD_PVP", PvPCheck, addonTable.Locales.GROUP_ITEM_DETAIL)
 AddKeywordManual(ITEM_UNIQUE:lower(), "unique", UniqueCheck, addonTable.Locales.GROUP_ITEM_DETAIL)
 AddKeywordLocalised("KEYWORD_CONJURED", ConjuredCheck, addonTable.Locales.GROUP_ITEM_DETAIL)
