@@ -189,23 +189,23 @@ local function DuplicateCheck(details)
   if stackable == nil then
     return nil
   elseif stackable then
-    return false
+    return false, true
   end
 
   local summaries = addonTable.ItemSummaries
   local currentCharacter = Syndicator.API.GetCurrentCharacter()
   if not summaries or not currentCharacter then
-    return false
+    return false, true
   end
 
   local key = addonTable.Utilities.GetItemKey(details.itemLink)
   local data = summaries:GetCharacterDataByKey(currentCharacter, key)
   if not data then
-    return false
+    return false, true
   end
 
   local total = (data.bags or 0) + (data.bank or 0) + (data.equipped or 0) + (data.void or 0)
-  return total > 1
+  return total > 1, true
 end
 
 local function SocketedCheck(details)
